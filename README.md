@@ -9,7 +9,7 @@ Projeto de aprendizado: lógica de um semáforo em Structured Text (IEC 61131-3)
 
 ## Arquivos
 - main.st: código do programa.
-- index.html: animação visual que reproduz a mesma lógica. Não está ligada à plataforma.
+- semaforo_lab.html: animação visual que reproduz a mesma lógica. Não está ligada à plataforma.
 
 ## Testes (QA)
 - Compilação sem erros.
