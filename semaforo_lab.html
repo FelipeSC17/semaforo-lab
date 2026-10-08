@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Semáforo_Lab · simulação visual</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#E4E8EB;--panel:#F6F8F9;--ink:#18222C;--mute:#566371;--line:#C5CDD4;--housing:#1F2A34;--pole:#2E3B47;--ok:#17703A;--okbg:#D8EFE1;--wait:#8A5A00;--btn:#18222C;--btntxt:#F6F8F9;
+--r-on:#E5302B;--a-on:#F5A300;--g-on:#1FB45A;--r-off:#4A2422;--a-off:#4A3A16;--g-off:#173D29}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11171C;--panel:#1A222A;--ink:#E7ECEF;--mute:#93A1AD;--line:#2B3640;--housing:#0A0E12;--pole:#232E38;--ok:#6FD79A;--okbg:#17342452;--wait:#E0B35A;--btn:#E7ECEF;--btntxt:#11171C}}
+:root[data-theme="dark"]{--bg:#11171C;--panel:#1A222A;--ink:#E7ECEF;--mute:#93A1AD;--line:#2B3640;--housing:#0A0E12;--pole:#232E38;--ok:#6FD79A;--okbg:#17342452;--wait:#E0B35A;--btn:#E7ECEF;--btntxt:#11171C}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:980px;margin:0 auto;padding:28px 20px 40px}
+h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:2.4rem;margin:0;letter-spacing:.01em}
+.sub{margin:.2rem 0 1.6rem;color:var(--mute);max-width:60ch}
+.grid{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:28px;align-items:start}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 16px 16px;display:flex;flex-direction:column;align-items:center}
+.stage svg{width:170px;max-width:60%;height:auto;display:block}
+.lamp{transition:fill .12s linear,filter .12s linear}
+.lamp.on{filter:drop-shadow(0 0 14px currentColor)}
+.count{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3rem;line-height:1;margin-top:14px;font-variant-numeric:tabular-nums}
+.phase{color:var(--mute);margin-top:2px;min-height:1.4em}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+h2{font-family:"Barlow Condensed",sans-serif;font-size:1.25rem;font-weight:600;margin:0 0 10px}
+.vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.v{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:ui-monospace,Consolas,monospace;font-size:.88rem}
+.v b{border-radius:5px;padding:1px 8px;background:var(--line);color:var(--ink);font-weight:600}
+.v b.t{background:var(--g-on);color:#04210F}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:9px 16px;background:var(--btn);color:var(--btntxt);cursor:pointer}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button[aria-pressed="true"]{background:var(--btn);color:var(--btntxt);border-color:var(--btn)}
+button:focus-visible{outline:3px solid var(--a-on);outline-offset:2px}
+.seg{display:flex;gap:6px;align-items:center;color:var(--mute)}
+ul{list-style:none;margin:0;padding:0}
+.chk li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.chk li:first-child{border-top:0}
+.s{font-weight:600;white-space:nowrap}
+.s.ok{color:var(--ok)}.s.wait{color:var(--wait)}.s.bad{color:var(--r-on)}
+.log li{font-family:ui-monospace,Consolas,monospace;font-size:.86rem;padding:4px 0;border-top:1px solid var(--line);color:var(--mute)}
+.log li:first-child{border-top:0;color:var(--ink)}
+.note{font-size:.85rem;color:var(--mute);margin:0}
+@media (prefers-reduced-motion:reduce){.lamp{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Semáforo_Lab</h1>
+<p class="sub">Réplica visual da lógica do programa <code>main</code> (Structured Text): vermelho 5 s, verde 5 s, amarelo 2 s. Começa no vermelho, como no Debugger.</p>
+<div class="grid">
+<section class="stage" aria-label="Semáforo">
+<svg viewBox="0 0 170 400" role="img" aria-label="Semáforo com três luzes">
+<rect x="78" y="330" width="14" height="70" rx="3" fill="var(--pole)"/>
+<rect x="15" y="10" width="140" height="330" rx="26" fill="var(--housing)"/>
+<circle id="lr" class="lamp" cx="85" cy="70" r="40" fill="var(--r-off)" style="color:var(--r-on)"/>
+<circle id="la" class="lamp" cx="85" cy="175" r="40" fill="var(--a-off)" style="color:var(--a-on)"/>
+<circle id="lg" class="lamp" cx="85" cy="280" r="40" fill="var(--g-off)" style="color:var(--g-on)"/>
+</svg>
+<div class="count" id="count">5,0 s</div>
+<div class="phase" id="phase" aria-live="polite">Vermelho</div>
+</section>
+<div>
+<section class="panel" aria-label="Variáveis">
+<h2>Variáveis do programa</h2>
+<div class="vars" id="vars"></div>
+</section>
+<section class="panel">
+<h2>Controles</h2>
+<div class="ctrl">
+<button id="play" type="button">Pausar</button>
+<button id="reset" type="button" class="sec">Reiniciar</button>
+<div class="seg" role="group" aria-label="Velocidade">Velocidade
+<button type="button" class="sec" data-sp="1" aria-pressed="true">1×</button>
+<button type="button" class="sec" data-sp="2" aria-pressed="false">2×</button>
+<button type="button" class="sec" data-sp="5" aria-pressed="false">5×</button>
+</div>
+</div>
+</section>
+<section class="panel">
+<h2>Checklist de QA</h2>
+<ul class="chk" id="chk"></ul>
+</section>
+<section class="panel">
+<h2>Registro das trocas</h2>
+<ul class="log" id="log"><li>Aguardando a primeira troca…</li></ul>
+</section>
+<p class="note">Esta página reproduz a lógica do programa, mas não está ligada ao Autonomy Logic. Ela não substitui o teste feito no Debugger.</p>
+</div>
+</div>
+</main>
+<script>
+(function(){
+var DUR=[5000,2000,5000],NOME=['Verde','Amarelo','Vermelho'],NEXT=[1,2,0],MAX_LOG=8;
+var estado,et,run,speed,ciclos,okTempo,okOrdem,okUnica,trocas,last;
+var $=function(i){return document.getElementById(i)};
+var lamps=[$('lg'),$('la'),$('lr')],OFF=['var(--g-off)','var(--a-off)','var(--r-off)'],ON=['var(--g-on)','var(--a-on)','var(--r-on)'];
+function fmt(ms){return (ms/1000).toFixed(1).replace('.',',')}
+function reset(){estado=2;et=0;ciclos=0;okTempo=true;okOrdem=true;okUnica=true;trocas=0;$('log').innerHTML='<li>Aguardando a primeira troca…</li>';}
+function troca(){
+  var de=estado,para=NEXT[de],medido=et;
+  if(Math.abs(medido-DUR[de])>150)okTempo=false;
+  if(para!==NEXT[de])okOrdem=false;
+  if(para===2)ciclos++;
+  trocas++;
+  var li=document.createElement('li');
+  li.textContent=NOME[de]+' → '+NOME[para]+'  ·  '+fmt(medido)+' s (esperado '+fmt(DUR[de])+' s)';
+  var L=$('log');if(trocas===1)L.innerHTML='';
+  L.insertBefore(li,L.firstChild);while(L.children.length>MAX_LOG)L.removeChild(L.lastChild);
+  estado=para;et=0;
+}
+function status(txt,cls){return '<span class="s '+cls+'">'+txt+'</span>'}
+function render(){
+  var acesas=0;
+  for(var i=0;i<3;i++){var on=(estado===i);if(on)acesas++;lamps[i].setAttribute('fill',on?ON[i]:OFF[i]);lamps[i].classList.toggle('on',on)}
+  if(acesas!==1)okUnica=false;
+  $('count').textContent=fmt(Math.max(0,DUR[estado]-et))+' s';
+  $('phase').textContent=NOME[estado];
+  var v=[['estado',estado,0],['tempo_fase',fmt(DUR[estado])+'s',0],['t_fase.ET',fmt(et)+'s',0],
+    ['luz_verde',estado===0?'TRUE':'FALSE',estado===0],['luz_amarela',estado===1?'TRUE':'FALSE',estado===1],['luz_vermelha',estado===2?'TRUE':'FALSE',estado===2]];
+  $('vars').innerHTML=v.map(function(x){return '<div class="v"><span>'+x[0]+'</span><b class="'+(x[2]?'t':'')+'">'+x[1]+'</b></div>'}).join('');
+  $('chk').innerHTML=
+    '<li><span>Só uma luz acesa de cada vez</span>'+(okUnica?status('OK','ok'):status('Falhou','bad'))+'</li>'+
+    '<li><span>Ordem: vermelho → verde → amarelo → vermelho</span>'+(trocas===0?status('Aguardando','wait'):okOrdem?status('OK','ok'):status('Falhou','bad'))+'</li>'+
+    '<li><span>Tempos: 5 s, 5 s e 2 s (tolerância de 0,15 s)</span>'+(trocas===0?status('Aguardando','wait'):okTempo?status('OK','ok'):status('Falhou','bad'))+'</li>'+
+    '<li><span>Ao menos 3 ciclos completos</span>'+(ciclos>=3?status('OK','ok'):status(ciclos+' de 3','wait'))+'</li>';
+}
+function tick(now){
+  var dt=now-last;last=now;
+  if(run){et+=Math.min(dt,250)*speed;while(et>=DUR[estado]){var sobra=et-DUR[estado];et=DUR[estado];troca();et=sobra}}
+  render();requestAnimationFrame(tick);
+}
+$('play').addEventListener('click',function(){run=!run;this.textContent=run?'Pausar':'Continuar'});
+$('reset').addEventListener('click',function(){reset();render()});
+Array.prototype.forEach.call(document.querySelectorAll('[data-sp]'),function(b){
+  b.addEventListener('click',function(){speed=+b.getAttribute('data-sp');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-sp]'),function(o){o.setAttribute('aria-pressed',o===b?'true':'false')})})
+});
+run=true;speed=1;reset();last=performance.now();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
